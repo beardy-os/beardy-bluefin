@@ -1,25 +1,34 @@
-FROM ghcr.io/ublue-os/base-main:latest
+ARG BASE_VERSION="41"
+ARG BASE_IMAGE="ghcr.io/ublue-os/bluefin"
+ARG CACHE_ID_SUFFIX="beardy-bluefin-latest"
 
-## Nvidia users use this instead
-# FROM ghcr.io/ublue-os/base-nvidia:latest
+FROM scratch AS ctx
+COPY / /
 
+FROM ${BASE_IMAGE}:${BASE_VERSION}
 
-## Install a Desktop
-# Use `dnf5 group list` to see possible group packages to install, or choose them individually
+ARG FEDORA_MAJOR_VERSION="41"
+ARG IMAGE_VENDOR="beardy-os"
+ARG IMAGE_NAME="beardy-bluefin"
 
-RUN dnf5 group install kde-desktop kde-apps
+# Unwrap cli
+RUN \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    /ctx/build_files/unwrap-cli.sh && \
+    ostree container commit
 
-## Install applications
-# Anything in Fedora
+# Update image info
+RUN \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    /ctx/build_files/image-info.sh && \
+    ostree container commit
 
-RUN dnf5 install vlc
-
-## Add COPRs
-# RUN dnf copr enable (copr-author/name)
-# RUN dnf5 install thing-from-copr
-
-## Manage services
-# systemctl enable foo.service
+# Add additional packages
+RUN \
+    --mount=type=cache,dst=/var/cache/rpm-ostree,id=rpm-ostree-cache-${CACHE_ID_SUFFIX},sharing=locked \
+    --mount=type=cache,dst=/var/cache/libdnf5,id=dnf-cache-${CACHE_ID_SUFFIX},sharing=locked \
+    dnf5 -y install tig && \
+    ostree container commit
 
 ## Final command
 RUN bootc container lint
