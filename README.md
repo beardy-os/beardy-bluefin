@@ -1,4 +1,7 @@
-# image-template
+# Beardy Bluefin
+
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/beardy-bluefin)](https://artifacthub.io/packages/search?repo=beardy-bluefin)
+[![build-ublue-custom](https://github.com/beardy-os/beardy-bluefin/actions/workflows/build.yml/badge.svg)](https://github.com/beardy-os/beardy-bluefin/actions/workflows/build.yml)
 
 ## Purpose
 
