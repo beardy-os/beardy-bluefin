@@ -27,7 +27,7 @@ RUN \
 RUN \
     --mount=type=cache,dst=/var/cache/rpm-ostree,id=rpm-ostree-cache-${CACHE_ID_SUFFIX},sharing=locked \
     --mount=type=cache,dst=/var/cache/libdnf5,id=dnf-cache-${CACHE_ID_SUFFIX},sharing=locked \
-    dnf5 -y install tig && \
+    dnf5 -y install tig qemu-img && \
     ostree container commit
 
 ## Final command
