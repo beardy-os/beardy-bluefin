@@ -14,7 +14,6 @@ on:
   workflow_dispatch:
 
 env:
-  MY_IMAGE_NAME: "${{ github.event.repository.name }}"  # the name of the image produced by this build, matches repo names
   MY_IMAGE_DESC: "My Customized Beardy OS (Universal Blue) Image"
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"  # do not edit
 
@@ -32,6 +31,14 @@ jobs:
       packages: write
       id-token: write
 
+    strategy:
+      fail-fast: false # stop GH from cancelling all matrix builds if one fails
+      matrix:
+        include:
+          - base: ghcr.io/ublue-os/bluefin
+            name: "${{ github.event.repository.name }}"
+          - base: ghcr.io/ublue-os/bluefin-dx
+            name: "${{ github.event.repository.name }}-dx"
     steps:
       # Checkout push-to-registry action GitHub repository
       - name: Checkout Push to Registry action
@@ -86,12 +93,12 @@ jobs:
         id: meta
         with:
           images: |
-            ${{ env.MY_IMAGE_NAME }}
+            ${{ matrix.name }}
 
           labels: |
             io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${{ github.repository }}/main/README.md
             org.opencontainers.image.description=${{ env.MY_IMAGE_DESC }}
-            org.opencontainers.image.title=${{ env.MY_IMAGE_NAME }}
+            org.opencontainers.image.title=${{ matrix.name }}
 
       # Build image using Buildah action
       - name: Build Image
@@ -102,7 +109,8 @@ jobs:
             ./Containerfile
           # Postfix image name with -custom to make it a little more descriptive
           # Syntax: https://docs.github.com/en/actions/learn-github-actions/expressions#format
-          image: ${{ env.MY_IMAGE_NAME }}
+          image: ${{ matrix.name }}
+          build-args: BASE_IMAGE=${{ matrix.base }}
           tags: |
             ${{ steps.generate-tags.outputs.alias_tags }}
           labels: ${{ steps.meta.outputs.labels }}
